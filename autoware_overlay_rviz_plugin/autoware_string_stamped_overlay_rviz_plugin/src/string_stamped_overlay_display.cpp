@@ -18,7 +18,9 @@
 #include <rviz_2d_overlay_plugins/overlay_utils.hpp>
 #include <rviz_common/uniform_string_stream.hpp>
 
+#if !defined(__APPLE__)
 #include <X11/Xlib.h>
+#endif
 
 #include <algorithm>
 #include <optional>
@@ -30,10 +32,16 @@ namespace autoware::string_stamped_rviz_plugin
 {
 StringStampedOverlayDisplay::StringStampedOverlayDisplay()
 {
+#if defined(__APPLE__)
+  // macOS has no X11. The scale below is only used to position overlay text relative to a
+  // 2160px (4K) reference height; without an X11 DPI probe, use a 1:1 baseline scale.
+  const float scale = 1.0F;
+#else
   const Screen * screen_info = DefaultScreenOfDisplay(XOpenDisplay(NULL));
 
   constexpr float hight_4k = 2160.0;
   const float scale = static_cast<float>(screen_info->height) / hight_4k;
+#endif
   const auto left = static_cast<int>(std::round(1024 * scale));
   const auto top = static_cast<int>(std::round(128 * scale));
 
