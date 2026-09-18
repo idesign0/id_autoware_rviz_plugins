@@ -4,17 +4,13 @@ project(autoware_planning_rviz_plugin)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-# ros2_macOS: the base builds rviz with Qt6 on this platform, so a hardcoded Qt5 here makes the
-# target QT_MAJOR_VERSION=5 while transitive rviz targets bring Qt6::OpenGL (QT_MAJOR_VERSION=6)
-# -> "INTERFACE_QT_MAJOR_VERSION property of Qt6::OpenGL does not agree ...". Prefer Qt6 when
-# present (matching rviz), fall back to Qt5.
-find_package(Qt6 QUIET COMPONENTS Core Widgets)
-if(Qt6_FOUND)
-  set(QT_LIBRARIES Qt6::Widgets)
-else()
-  find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-  set(QT_LIBRARIES Qt5::Widgets)
-endif()
+# ros2_macOS: the base rviz is Qt5 on this platform (the sibling autoware_localization_rviz_plugin
+# builds cleanly with Qt5, and rviz exports Qt5 targets). An earlier "prefer Qt6" attempt here made
+# this plugin pick Qt6::Widgets while rviz still brought Qt6::OpenGL vs the target's Qt5-determined
+# QT_MAJOR_VERSION -> "INTERFACE_QT_MAJOR_VERSION property of Qt6::OpenGL does not agree ...". Use
+# Qt5 to match rviz (identical to the working sibling plugins).
+find_package(Qt5 REQUIRED Core Widgets)
+set(QT_LIBRARIES Qt5::Widgets)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_definitions(-DQT_NO_KEYWORDS)
